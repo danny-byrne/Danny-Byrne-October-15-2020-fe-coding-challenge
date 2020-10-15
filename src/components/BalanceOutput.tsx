@@ -1,5 +1,6 @@
 import React, {FC} from 'react';
 import {connect} from 'react-redux';
+import journal from 'reducers/journal';
 
 import {JournalType, RootState, UserInputType} from 'types';
 import {dateToString, toCSV} from 'utils';
@@ -68,9 +69,14 @@ export default connect(
     // destructure parameters from state.userInput for filtering in next step
     const {endAccount, endPeriod, startAccount, startPeriod} = state.userInput;
 
-    const journalEntries = {state};
+    console.log('state is', state);
+
+    // console.log('line 74', curState.state);
+
+    const {journalEntries} = state;
+    console.log('line 77', journalEntries);
     // id state.userInput is not null, filter journalEntries by destructured params
-    const filteredEntries: Balance = journalEntries.filter(
+    const filteredEntries: any = journalEntries.filter(
       (e) => e.ACCOUNT >= startAccount && e.ACCOUNT <= endAccount && e.PERIOD >= startPeriod && e.PERIOD <= endPeriod,
     );
 
@@ -85,7 +91,10 @@ export default connect(
         }
       }
     }
-    filteredEntries.map((e: {BALANCE: number; DEBIT: number; CREDIT: number}) => (e.BALANCE = e.DEBIT - e.CREDIT));
+    // filteredEntries.map((e: {BALANCE: number; DEBIT: number; CREDIT: number}) => (e.BALANCE = e.DEBIT - e.CREDIT));
+    for (let i = 0; i < filteredEntries.length; i += 1) {
+      filteredEntries[i].BALANCE = filteredEntries[i].DEBIT - filteredEntries[i].CREDIT;
+    }
 
     balance = [...filteredEntries];
 
