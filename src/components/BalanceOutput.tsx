@@ -62,29 +62,26 @@ const BalanceOutput: FC<ConnectProps> = ({balance, totalCredit, totalDebit, user
 
 export default connect(
   (state: RootState): ConnectProps => {
-    let balance: Balance[] = [];
+    const balance: Balance[] = [];
 
     /* YOUR CODE GOES HERE */
 
     // destructure parameters from state.userInput for filtering in next step
-    // const {endAccount, endPeriod, startAccount, startPeriod} = state.userInput;
-
     const {journalEntries} = state;
 
-    console.log(state.accounts);
+    // console.log(state.accounts);
     console.log(journalEntries);
 
     // if state.userInput is not null, filter journalEntries by destructured params
     const filteredEntries: JournalType[] = journalEntries.filter(
       (e) =>
-        e.ACCOUNT >= state.userInput?.startAccount &&
-        e.ACCOUNT <= state.userInput?.endAccount &&
-        e.PERIOD >= state.userInput?.startPeriod &&
-        e.PERIOD <= state.userInput?.endPeriod,
+        e.ACCOUNT >= state.userInput!.startAccount &&
+        e.ACCOUNT <= state.userInput!.endAccount &&
+        e.PERIOD >= state.userInput!.startPeriod &&
+        e.PERIOD <= state.userInput!.endPeriod,
     );
 
     // pull in account label from accounts to compare to journalEntries.DESCRIPTION based on account # matching
-    // iterate through journalEntries checking account number
     for (let i = 0; i < filteredEntries.length; i += 1) {
       const accountNum = filteredEntries[i].ACCOUNT;
       for (let j = 0; j < state.accounts.length; j += 1) {
@@ -100,9 +97,6 @@ export default connect(
         }
       }
     }
-    // for (let i = 0; i < filteredEntries.length; i += 1) {
-    //   filteredEntries[i].BALANCE = filteredEntries[i].DEBIT - filteredEntries[i].CREDIT;
-    // }
 
     const totalCredit = balance.reduce((acc, entry) => acc + entry.CREDIT, 0);
     const totalDebit = balance.reduce((acc, entry) => acc + entry.DEBIT, 0);
