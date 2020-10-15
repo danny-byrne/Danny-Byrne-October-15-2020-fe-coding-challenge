@@ -65,6 +65,18 @@ export default connect(
 
     /* YOUR CODE GOES HERE */
 
+    //destructure parameters from state.userInput for filtering
+    const {endAccount, endPeriod, startAccount, startPeriod} = state.userInput;
+    //id state.userInput is not null, filter journalEntries by destructured params
+    const journalEntries = state.userInput
+      ? state.journalEntries.filter(
+          (e) =>
+            e.ACCOUNT >= startAccount && e.ACCOUNT <= endAccount && e.PERIOD >= startPeriod && e.PERIOD <= endPeriod,
+        )
+      : null;
+
+    balance = [...journalEntries];
+
     const totalCredit = balance.reduce((acc, entry) => acc + entry.CREDIT, 0);
     const totalDebit = balance.reduce((acc, entry) => acc + entry.DEBIT, 0);
 
