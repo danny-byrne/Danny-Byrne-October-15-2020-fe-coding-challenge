@@ -20,6 +20,14 @@ export type UserInputType = {
   format: string;
 };
 
+// export type UserInputType = {
+//   startAccount: number;
+//   endAccount: number;
+//   startPeriod: Date;
+//   endPeriod: Date;
+//   format: string;
+// };
+
 export interface RootState {
   accounts: AccountType[];
   journalEntries: JournalType[];
