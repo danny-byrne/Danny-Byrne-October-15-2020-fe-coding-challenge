@@ -64,18 +64,18 @@ export default connect(
     let balance: Balance[] = [];
 
     /* YOUR CODE GOES HERE */
-    //lets build out
-    //destructure parameters from state.userInput for filtering
+    // lets build out
+    // destructure parameters from state.userInput for filtering in next step
     const {endAccount, endPeriod, startAccount, startPeriod} = state.userInput;
-    //id state.userInput is not null, filter journalEntries by destructured params
+    // id state.userInput is not null, filter journalEntries by destructured params
     balance = state.journalEntries.filter(
       (e) => e.ACCOUNT >= startAccount && e.ACCOUNT <= endAccount && e.PERIOD >= startPeriod && e.PERIOD <= endPeriod,
     );
 
-    //pull in account label from accounts to journalEntries.DESCRIPTION based on account # matching
-    //iterate through journalEntries checking account number
+    // pull in account label from accounts to journalEntries.DESCRIPTION based on account # matching
+    // iterate through journalEntries checking account number
     for (let i = 0; i < balance.length; i += 1) {
-      let accountNum = balance[i].ACCOUNT;
+      const accountNum = balance[i].ACCOUNT;
       for (let j = 0; j < state.accounts.length; j += 1) {
         if (state.accounts[j].ACCOUNT.toString() === accountNum) {
           balance[i].DESCRIPTION = state.accounts[j].LABEL;
@@ -83,7 +83,6 @@ export default connect(
         }
       }
     }
-    //spread journalEntries into balance for next steps and to pass to props
 
     const totalCredit = balance.reduce((acc, entry) => acc + entry.CREDIT, 0);
     const totalDebit = balance.reduce((acc, entry) => acc + entry.DEBIT, 0);
