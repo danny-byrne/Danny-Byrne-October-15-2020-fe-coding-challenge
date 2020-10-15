@@ -65,38 +65,44 @@ export default connect(
     let balance: Balance[] = [];
 
     /* YOUR CODE GOES HERE */
-    // lets build out
+
     // destructure parameters from state.userInput for filtering in next step
-    const {endAccount, endPeriod, startAccount, startPeriod} = state.userInput;
-
-    console.log('state is', state);
-
-    // console.log('line 74', curState.state);
+    // const {endAccount, endPeriod, startAccount, startPeriod} = state.userInput;
 
     const {journalEntries} = state;
-    console.log('line 77', journalEntries);
-    // id state.userInput is not null, filter journalEntries by destructured params
-    const filteredEntries: any = journalEntries.filter(
-      (e) => e.ACCOUNT >= startAccount && e.ACCOUNT <= endAccount && e.PERIOD >= startPeriod && e.PERIOD <= endPeriod,
+
+    console.log(state.accounts);
+    console.log(journalEntries);
+
+    // if state.userInput is not null, filter journalEntries by destructured params
+    const filteredEntries: JournalType[] = journalEntries.filter(
+      (e) =>
+        e.ACCOUNT >= state.userInput?.startAccount &&
+        e.ACCOUNT <= state.userInput?.endAccount &&
+        e.PERIOD >= state.userInput?.startPeriod &&
+        e.PERIOD <= state.userInput?.endPeriod,
     );
 
-    // pull in account label from accounts to journalEntries.DESCRIPTION based on account # matching
+    // pull in account label from accounts to compare to journalEntries.DESCRIPTION based on account # matching
     // iterate through journalEntries checking account number
     for (let i = 0; i < filteredEntries.length; i += 1) {
       const accountNum = filteredEntries[i].ACCOUNT;
       for (let j = 0; j < state.accounts.length; j += 1) {
-        if (state.accounts[j].ACCOUNT.toString() === accountNum) {
-          filteredEntries[i].DESCRIPTION = state.accounts[j].LABEL;
+        if (state.accounts[j].ACCOUNT === accountNum) {
+          balance.push({
+            ACCOUNT: accountNum.toString(),
+            BALANCE: filteredEntries[i].DEBIT - filteredEntries[i].CREDIT,
+            CREDIT: filteredEntries[i].CREDIT,
+            DEBIT: filteredEntries[i].DEBIT,
+            DESCRIPTION: state.accounts[j].LABEL,
+          });
           break;
         }
       }
     }
-    // filteredEntries.map((e: {BALANCE: number; DEBIT: number; CREDIT: number}) => (e.BALANCE = e.DEBIT - e.CREDIT));
-    for (let i = 0; i < filteredEntries.length; i += 1) {
-      filteredEntries[i].BALANCE = filteredEntries[i].DEBIT - filteredEntries[i].CREDIT;
-    }
-
-    balance = [...filteredEntries];
+    // for (let i = 0; i < filteredEntries.length; i += 1) {
+    //   filteredEntries[i].BALANCE = filteredEntries[i].DEBIT - filteredEntries[i].CREDIT;
+    // }
 
     const totalCredit = balance.reduce((acc, entry) => acc + entry.CREDIT, 0);
     const totalDebit = balance.reduce((acc, entry) => acc + entry.DEBIT, 0);
