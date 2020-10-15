@@ -67,8 +67,10 @@ export default connect(
     // lets build out
     // destructure parameters from state.userInput for filtering in next step
     const {endAccount, endPeriod, startAccount, startPeriod} = state.userInput;
+
+    const journalEntries = {state};
     // id state.userInput is not null, filter journalEntries by destructured params
-    let filteredEntries: JournalType = state.journalEntries.filter(
+    const filteredEntries: Balance = journalEntries.filter(
       (e) => e.ACCOUNT >= startAccount && e.ACCOUNT <= endAccount && e.PERIOD >= startPeriod && e.PERIOD <= endPeriod,
     );
 
@@ -83,6 +85,7 @@ export default connect(
         }
       }
     }
+    filteredEntries.map((e: {BALANCE: number; DEBIT: number; CREDIT: number}) => (e.BALANCE = e.DEBIT - e.CREDIT));
 
     balance = [...filteredEntries];
 
