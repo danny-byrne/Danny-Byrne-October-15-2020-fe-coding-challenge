@@ -1,7 +1,7 @@
 import React, {FC} from 'react';
 import {connect} from 'react-redux';
 
-import {RootState, UserInputType} from 'types';
+import {JournalType, RootState, UserInputType} from 'types';
 import {dateToString, toCSV} from 'utils';
 
 interface Balance {
@@ -68,21 +68,23 @@ export default connect(
     // destructure parameters from state.userInput for filtering in next step
     const {endAccount, endPeriod, startAccount, startPeriod} = state.userInput;
     // id state.userInput is not null, filter journalEntries by destructured params
-    balance = state.journalEntries.filter(
+    let filteredEntries: JournalType = state.journalEntries.filter(
       (e) => e.ACCOUNT >= startAccount && e.ACCOUNT <= endAccount && e.PERIOD >= startPeriod && e.PERIOD <= endPeriod,
     );
 
     // pull in account label from accounts to journalEntries.DESCRIPTION based on account # matching
     // iterate through journalEntries checking account number
-    for (let i = 0; i < balance.length; i += 1) {
-      const accountNum = balance[i].ACCOUNT;
+    for (let i = 0; i < filteredEntries.length; i += 1) {
+      const accountNum = filteredEntries[i].ACCOUNT;
       for (let j = 0; j < state.accounts.length; j += 1) {
         if (state.accounts[j].ACCOUNT.toString() === accountNum) {
-          balance[i].DESCRIPTION = state.accounts[j].LABEL;
+          filteredEntries[i].DESCRIPTION = state.accounts[j].LABEL;
           break;
         }
       }
     }
+
+    balance = [...filteredEntries];
 
     const totalCredit = balance.reduce((acc, entry) => acc + entry.CREDIT, 0);
     const totalDebit = balance.reduce((acc, entry) => acc + entry.DEBIT, 0);
