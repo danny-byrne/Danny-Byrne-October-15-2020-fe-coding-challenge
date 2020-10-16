@@ -1,6 +1,8 @@
+import {type} from 'os';
 import React, {FC} from 'react';
 import {connect} from 'react-redux';
 import journal from 'reducers/journal';
+import {start} from 'repl';
 
 import {JournalType, RootState, UserInputType} from 'types';
 import {dateToString, toCSV} from 'utils';
@@ -18,6 +20,12 @@ interface ConnectProps {
   totalCredit: number;
   totalDebit: number;
   userInput: UserInputType;
+}
+
+interface Entry {
+  ACCOUNT: string | number;
+  DEBIT: number;
+  CREDIT: number;
 }
 
 const BalanceOutput: FC<ConnectProps> = ({balance, totalCredit, totalDebit, userInput}) => {
@@ -60,39 +68,67 @@ const BalanceOutput: FC<ConnectProps> = ({balance, totalCredit, totalDebit, user
   );
 };
 
+// 2000 * * MAY-16 CSV
+
 export default connect(
   (state: RootState): ConnectProps => {
     const balance: Balance[] = [];
-
-    /* YOUR CODE GOES HERE */
-
     // destructure parameters from state.userInput for filtering in next step
     const {journalEntries} = state;
 
-    // console.log(state.accounts);
-    console.log(journalEntries);
+    const {startAccount, endAccount, startPeriod, endPeriod} = state.userInput;
 
-    // if state.userInput is not null, filter journalEntries by destructured params
-    const filteredEntries: JournalType[] = journalEntries.filter(
+    function consolidate(filtered: JournalType[]) {
+      const result: any = {};
+      for (let i = 0; i < filtered.length; i += 1) {
+        const cur: string = filtered[i].ACCOUNT.toString();
+        if (result[cur]) {
+          result[cur].DEBIT += filtered[i].DEBIT;
+          result[cur].CREDIT += filtered[i].CREDIT;
+        } else {
+          result[cur] = {
+            ACCOUNT: cur,
+            CREDIT: filtered[i].CREDIT,
+            DEBIT: filtered[i].DEBIT,
+          };
+        }
+      }
+      return result;
+    }
+
+    // assign undefined, null or NaN values if '*' is passed in.
+    const stAcct: number = startAccount === null || isNaN(startAccount) ? 1000 : startAccount;
+    const endAcct: number = endAccount === null || isNaN(endAccount) ? 9999 : endAccount;
+    const startPd: number =
+      startPeriod === null || undefined || isNaN(startPeriod.valueOf())
+        ? new Date(`01 1 2000`).getTime()
+        : startPeriod.getTime();
+    const endPd: number =
+      endPeriod === null || undefined || isNaN(endPeriod.valueOf())
+        ? new Date(`10 1 2020`).getTime()
+        : endPeriod.getTime();
+
+    const filtered: JournalType[] = journalEntries.filter(
       (e) =>
-        e.ACCOUNT >= state.userInput!.startAccount &&
-        e.ACCOUNT <= state.userInput!.endAccount &&
-        e.PERIOD >= state.userInput!.startPeriod &&
-        e.PERIOD <= state.userInput!.endPeriod,
+        e.ACCOUNT >= stAcct && e.ACCOUNT <= endAcct && e.PERIOD.getTime() >= startPd && e.PERIOD.getTime() <= endPd,
     );
 
-    // pull in account label from accounts to compare to journalEntries.DESCRIPTION based on account # matching
-    for (let i = 0; i < filteredEntries.length; i += 1) {
-      const accountNum = filteredEntries[i].ACCOUNT;
+    const consolidated = Object.entries(consolidate(filtered));
+
+    // match descriptions to accounts
+    for (let i = 0; i < consolidated.length; i += 1) {
+      const curEntry: any = consolidated[i][1];
+      const {ACCOUNT, CREDIT, DEBIT} = curEntry;
       for (let j = 0; j < state.accounts.length; j += 1) {
-        if (state.accounts[j].ACCOUNT === accountNum) {
-          balance.push({
-            ACCOUNT: accountNum.toString(),
-            BALANCE: filteredEntries[i].DEBIT - filteredEntries[i].CREDIT,
-            CREDIT: filteredEntries[i].CREDIT,
-            DEBIT: filteredEntries[i].DEBIT,
+        if (state.accounts[j].ACCOUNT.toString() === ACCOUNT) {
+          const obj = {
+            ACCOUNT: ACCOUNT.toString(),
             DESCRIPTION: state.accounts[j].LABEL,
-          });
+            DEBIT,
+            CREDIT,
+            BALANCE: DEBIT - CREDIT,
+          };
+          balance.push(obj);
           break;
         }
       }
