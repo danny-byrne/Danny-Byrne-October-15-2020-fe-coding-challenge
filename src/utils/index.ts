@@ -43,7 +43,6 @@ export const toCSV = (arr: {[key: string]: any}[]) => {
 
 export const parseUserInput = (str: string) => {
   const [startAccount, endAccount, startPeriod, endPeriod, format] = str.split(' ');
-  console.log('in parseUserInput', startAccount, endAccount, startPeriod, endPeriod, format);
   return {
     startAccount: parseInt(startAccount, 10),
     endAccount: parseInt(endAccount, 10),
